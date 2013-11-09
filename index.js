@@ -64,17 +64,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   }
 
 
-  this._dumpDebug = function() {
-    var formattedSpecs = [];
-    suiteOutputCache.content.forEach(function(spec) {
-      var specName = spec[2];
-      formattedSpecs.push(specName);
-    });
-
-    console.log(JSON.stringify(totalResult), ',', formattedSpecs, "\n\n");
-  };
-
-
   this.specSuccess = function(browser, result) {
 
     debug && totalResult.push(result);
@@ -135,9 +124,10 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
       ((suite.length !== previousSuite.length) || (suite.join('') !== previousSuite.join('')));
 
     if (isNextSuite || isFirstSpec || !previousSuite) {
+      var self = this;
+
       if (isFirstSpec) {
         isFirstSpec = false;
-        var self = this;
         suite.slice(1).forEach(function(thisSuite, index) {
           var suiteName = self.getTabIndents(index) + '- ' + suite[index] + ':';
           self.writeToCache([self.HEADER_PASSED, browser.name, suiteName, index + 1]);
@@ -147,8 +137,12 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
         this.writeToCache([this.HEADER_PASSED, browser.name, '', suite.length]);
       }
 
-      var suiteName = this.getTabIndents(suite.length - 1) + '- ' + suite[suite.length - 1] + ':';
-      this.writeToCache([this.HEADER_PASSED, browser.name, suiteName, suite.length]);
+      suite.forEach(function(suiteName, index) {
+        if (!previousSuite || !previousSuite[index] || previousSuite[index] !== suite[index]) {
+          var thisSuiteName = self.getTabIndents(index) + '- ' + suite[index] + ':';
+          self.writeToCache([self.HEADER_PASSED, browser.name, thisSuiteName, suite.length]);
+        }
+      });
     }
   };
 
@@ -156,8 +150,10 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   this.detectRootSuite = function(suite) {
     var previousSuiteLength = (previousSuite && previousSuite.length) || 0;
     if (suite.length === 1 && (suite.length < previousSuiteLength)) {
-      totalResult = [];
-      this.flushCache();
+      if (suite[0] !== previousSuite[0]) {
+        totalResult = [];
+        this.flushCache();
+      }
     }
   };
 
@@ -255,15 +251,26 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
       content: [],
       failedSuites: []
     };
-
-    this._testInterface = {
-      previousSuite: previousSuite,
-      isFirstSpec: isFirstSpec,
-      suiteOutputCache: suiteOutputCache,
-      suiteErrorOutput: suiteErrorOutput
-    };
   };
 
+
+  this._dumpDebug = function() {
+    var formattedSpecs = [];
+    suiteOutputCache.content.forEach(function(spec) {
+      var specName = spec[2];
+      formattedSpecs.push(specName);
+    });
+
+    console.log('[', JSON.stringify(totalResult), ',', formattedSpecs, "]\n\n");
+  };
+
+
+  this._testInterface = {
+    previousSuite: previousSuite,
+    isFirstSpec: isFirstSpec,
+    suiteOutputCache: suiteOutputCache,
+    suiteErrorOutput: suiteErrorOutput
+  };
 
   this.resetSuiteOutput();
 };

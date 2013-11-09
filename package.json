@@ -4,7 +4,8 @@
   "description": "A Karma plugin. Report results in BDD-style story format.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start karma.conf.js --single-run",
+    "demo": "karma start karma-story-reporter-demo.conf.js --single-run"
   },
   "repository": {
     "type": "git",

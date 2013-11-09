@@ -1,5 +1,7 @@
 describe("Karma story reporter mock formatter", function() {
 
+  'use strict';
+
   it("concatenates arguments into a string", function() {
     expect(mockFormatter('a', 'b', 'c')).toBe('abc');
   });
@@ -12,6 +14,8 @@ describe("Karma story reporter mock formatter", function() {
 
 
 describe("Karma story reporter", function() {
+
+  'use strict';
 
   var storyReporter = null;
   var browser = {name: 'Test Browser (Test)'};
@@ -102,7 +106,99 @@ describe("Karma story reporter", function() {
           '\t\t\t\t- child of failing test:',
           '\t\t\t\t\tpasses this test'
         ]
+      ],
+
+      [
+        [
+          {"id": 0, "description": "has test A", "suite": ["Block A"], "success": true, "skipped": false, "time": 2, "log": []},
+          {"id": 1, "description": "has test C", "suite": ["Block A", "Block B", "Block C"], "success": true, "skipped": false, "time": 0, "log": []}
+        ] ,
+        [ '- Block A:',
+          '\thas test A',
+          '',
+          '\t- Block B:',
+          '\t\t- Block C:',
+          '\t\t\thas test C'
+        ]
+      ],
+
+      [
+        [
+          {"id": 0, "description": "has test D", "suite": ["Nested spec D"], "success": true, "skipped": false, "time": 3, "log": []},
+          {"id": 1, "description": "has test G", "suite": ["Nested spec D", "Nested spec E", "Nested spec F", "Nested spec G"], "success": true, "skipped": false, "time": 0, "log": []},
+          {"id": 2, "description": "has test K", "suite": ["Nested spec D", "Nested spec E", "Nested spec F", "Nested spec G", "Nested spec F", "Nested spec J", "Nested spec K"], "success": true, "skipped": false, "time": 0, "log": []}
+        ] ,
+        [ '- Nested spec D:',
+          '\thas test D',
+          '',
+          '\t- Nested spec E:',
+          '\t\t- Nested spec F:',
+          '\t\t\t- Nested spec G:',
+          '\t\t\t\thas test G',
+          '',
+          '\t\t\t\t- Nested spec F:',
+          '\t\t\t\t\t- Nested spec J:',
+          '\t\t\t\t\t\t- Nested spec K:',
+          '\t\t\t\t\t\t\thas test K' ]
+      ],
+
+      [
+        [
+          {"id": 0, "description": "has test A", "suite": ["Root suite"], "success": true, "skipped": false, "time": 2, "log": []},
+          {"id": 1, "description": "has test B", "suite": ["Root suite", "Nested Suite"], "success": true, "skipped": false, "time": 0, "log": []},
+          {"id": 2, "description": "has test C", "suite": ["Root suite"], "success": true, "skipped": false, "time": 2, "log": []}
+        ] ,
+        [ '- Root suite:',
+          '\thas test A',
+          '',
+          '\t- Nested Suite:',
+          '\t\thas test B',
+          '',
+          '\thas test C'
+        ]
+      ],
+
+      [
+        [
+          {"id": 0, "description": "Buffer test", "suite": ["Buffer Suite"], "success": true, "skipped": false, "time": 2, "log": []},
+          {"id": 1, "description": "Test B", "suite": ["Suite A", "Suite B"], "success": true, "skipped": false, "time": 0, "log": []}
+        ] ,
+        [ '- Buffer Suite:',
+          '\tBuffer test',
+          '',
+          '- Suite A:',
+          '\t- Suite B:',
+          '\t\tTest B'
+        ]
+      ],
+
+      [
+        [
+          {"id": 2, "description": "has test D", "suite": ["Nested spec D"], "success": true, "skipped": false, "time": 0, "log": []},
+          {"id": 3, "description": "has test G", "suite": ["Nested spec D", "Nested spec E", "Nested spec F", "Nested spec G"], "success": true, "skipped": false, "time": 0, "log": []},
+          {"id": 4, "description": "has test K", "suite": ["Nested spec D", "Nested spec E", "Nested spec F", "Nested spec G", "Nested spec F", "Nested spec J", "Nested spec K"], "success": true, "skipped": false, "time": 0, "log": []},
+          {"id": 5, "description": "Test B", "suite": ["Suite A", "Suite B"], "success": true, "skipped": false, "time": 0, "log": []}
+        ] ,
+        [ '- Nested spec D:',
+          '\thas test D',
+          '',
+          '\t- Nested spec E:',
+          '\t\t- Nested spec F:',
+          '\t\t\t- Nested spec G:',
+          '\t\t\t\thas test G',
+          '',
+          '\t\t\t\t- Nested spec F:',
+          '\t\t\t\t\t- Nested spec J:',
+          '\t\t\t\t\t\t- Nested spec K:',
+          '\t\t\t\t\t\t\thas test K',
+          '',
+          '- Suite A:',
+          '\t- Suite B:',
+          '\t\tTest B'
+        ]
       ]
+
+
     ],
     function(testResults, expectedFormatting) {
 
@@ -116,7 +212,7 @@ describe("Karma story reporter", function() {
 
         testResults.forEach(function(result) {
           storyReporter.specSuccess(browser, result);
-        })
+        });
 
         storyReporter.flushCache();
 
