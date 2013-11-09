@@ -16,6 +16,9 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   var suiteOutputCache = {};
   var suiteErrorOutput = {content: []};
 
+  var debug = false;
+  var totalResult = [];
+
   baseReporterDecorator(this, formatError, reportSlow);
 
   this.USE_COLORS = colors;
@@ -61,21 +64,40 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   }
 
 
+  this._dumpDebug = function() {
+    var formattedSpecs = [];
+    suiteOutputCache.content.forEach(function(spec) {
+      var specName = spec[2];
+      formattedSpecs.push(specName);
+    });
+
+    console.log(JSON.stringify(totalResult), ',', formattedSpecs, "\n\n");
+  };
+
+
   this.specSuccess = function(browser, result) {
+
+    debug && totalResult.push(result);
+
     var specName = this.getSpecName(result, browser);
     if (reportSlow && result.time > reportSlow) {
       var time = helper.formatTimeInterval(result.time);
       var fullSpecName = result.suite.join(' ') + ' ' + result.description;
 
-      this.writeToCache(util.format(this.SPEC_SLOW_PASSED, browser.name, specName, time));
+      this.writeToCache([this.SPEC_SLOW_PASSED, browser.name, specName, time]);
       this.writeToErrorCache(util.format(this.SPEC_SLOW_PASSED, browser.name, fullSpecName, time));
     } else {
-      this.writeToCache(util.format(this.SPEC_PASSED, browser.name, specName));
+      this.writeToCache([this.SPEC_PASSED, browser.name, specName]);
     }
+
+    debug && this._dumpDebug();
   };
 
 
   this.specFailure = function(browser, result) {
+
+    debug && totalResult.push(result);
+
     var specName = this.getSpecName(result, browser);
     var fullSpecName = result.suite.join(' ') + ' ' + result.description;
 
@@ -87,14 +109,16 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     if (reportSlow && result.time > reportSlow) {
       var time = helper.formatTimeInterval(result.time);
 
-      this.writeToCache(util.format(this.SPEC_SLOW_FAILED, browser.name, specName, time));
+      this.writeToCache([this.SPEC_SLOW_FAILED, browser.name, specName, time]);
       this.writeToErrorCache(
         util.format(this.SPEC_SLOW_FAILED, browser.name, fullSpecName, time) + error, result.suite);
     } else {
-      this.writeToCache(util.format(this.SPEC_FAILURE, browser.name, specName));
+      this.writeToCache([this.SPEC_FAILURE, browser.name, specName]);
       this.writeToErrorCache(
         util.format(this.SPEC_FAILURE, browser.name, fullSpecName) + error, result.suite);
     }
+
+    debug && this._dumpDebug();
   };
 
 
@@ -114,7 +138,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
       if (isFirstSpec) {
         isFirstSpec = false;
         var self = this;
-        suite.slice(1).forEach(function (thisSuite, index) {
+        suite.slice(1).forEach(function(thisSuite, index) {
           var suiteName = self.getTabIndents(index) + '- ' + suite[index] + ':';
           self.writeToCache([self.HEADER_PASSED, browser.name, suiteName, index + 1]);
         });
@@ -132,6 +156,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   this.detectRootSuite = function(suite) {
     var previousSuiteLength = (previousSuite && previousSuite.length) || 0;
     if (suite.length === 1 && (suite.length < previousSuiteLength)) {
+      totalResult = [];
       this.flushCache();
     }
   };
@@ -167,6 +192,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
 
   this.flushCache = function() {
+
     var self = this;
     suiteOutputCache.content.forEach(function(spec) {
       if (Array.isArray(spec)) {
@@ -228,6 +254,13 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
       prefixNewline: true,
       content: [],
       failedSuites: []
+    };
+
+    this._testInterface = {
+      previousSuite: previousSuite,
+      isFirstSpec: isFirstSpec,
+      suiteOutputCache: suiteOutputCache,
+      suiteErrorOutput: suiteErrorOutput
     };
   };
 
