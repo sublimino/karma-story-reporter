@@ -117,10 +117,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
       var self = this;
       if (isFirstSpec) {
         isFirstSpec = false;
-        suite.slice(1).forEach(function(thisSuite, index) {
-          var suiteName = self.getTabIndents(index) + '- ' + suite[index] + ':';
-          self.writeToCache([self.HEADER_PASSED, browser.name, suiteName, index + 1]);
-        });
       } else {
         // TODO: conditional colouring of this spacer line from percentage of passed specs
         this.writeToCache([this.HEADER_PASSED, browser.name, '', suite.length]);

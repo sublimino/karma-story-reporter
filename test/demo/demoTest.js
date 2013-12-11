@@ -1,9 +1,11 @@
 describe("Initial spec", function() {
 
   'use strict';
+  describe("Initial spec nested", function() {
 
-  it("has a passing child test", function() {
-    expect(':)').toMatch(/.*/);
+    it("has a passing child test", function() {
+      expect(':)').toMatch(/.*/);
+    });
   });
 });
 
@@ -24,7 +26,6 @@ describe("Story reporter", function() {
       expect(1).toBe(1);
     });
   });
-
 
   describe("with deeply nested spec", function() {
 
@@ -50,7 +51,6 @@ describe("Story reporter", function() {
       });
     });
 
-
     describe("with a failing child spec", function() {
 
       it("passes this test", function() {
@@ -73,7 +73,6 @@ describe("Story reporter", function() {
     });
   });
 });
-
 
 describe("Final spec", function() {
 
