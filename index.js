@@ -6,12 +6,11 @@
 var util = require('util');
 require('colors');
 
-
 var StoryReporter = function(baseReporterDecorator, formatError, helper, reportSlow, colors) {
 
   'use strict';
 
-  var previousSuite;
+  var previousSuite = null;
   var isFirstSpec = true;
   var suiteOutputCache = {};
   var suiteErrorOutput = {content: []};
@@ -41,7 +40,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   this.TOTAL_SUCCESS = 'TOTAL: %d SUCCESS\n';
   this.TOTAL_FAILED = 'TOTAL: %d FAILED, %d SUCCESS\n';
 
-
   if (this.USE_COLORS) {
 
     this.HEADER_PASSED = this.HEADER_PASSED.green;
@@ -63,9 +61,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     this.TOTAL_FAILED = this.TOTAL_FAILED.red;
   }
 
-
   this.specSuccess = function(browser, result) {
-
     debug && totalResult.push(result);
 
     var specName = this.getSpecName(result, browser);
@@ -82,14 +78,11 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     debug && this._dumpDebug();
   };
 
-
   this.specFailure = function(browser, result) {
-
     debug && totalResult.push(result);
 
     var specName = this.getSpecName(result, browser);
     var fullSpecName = result.suite.join(' ') + ' ' + result.description;
-
     var error = '';
     result.log.forEach(function(log) {
       error += formatError(log, '\t');
@@ -97,7 +90,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
     if (reportSlow && result.time > reportSlow) {
       var time = helper.formatTimeInterval(result.time);
-
       this.writeToCache([this.SPEC_SLOW_FAILED, browser.name, specName, time]);
       this.writeToErrorCache(
         util.format(this.SPEC_SLOW_FAILED, browser.name, fullSpecName, time) + error, result.suite);
@@ -110,7 +102,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     debug && this._dumpDebug();
   };
 
-
   this.getSpecName = function(result, browser) {
     this.detectRootSuite(result.suite);
     this.detectSuiteChange(result.suite, browser);
@@ -118,14 +109,12 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     return this.getIndentedSpecName(result.suite, result.description);
   };
 
-
   this.detectSuiteChange = function(suite, browser) {
     var isNextSuite = previousSuite &&
       ((suite.length !== previousSuite.length) || (suite.join('') !== previousSuite.join('')));
 
     if (isNextSuite || isFirstSpec || !previousSuite) {
       var self = this;
-
       if (isFirstSpec) {
         isFirstSpec = false;
         suite.slice(1).forEach(function(thisSuite, index) {
@@ -146,7 +135,6 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     }
   };
 
-
   this.detectRootSuite = function(suite) {
     var previousSuiteLength = (previousSuite && previousSuite.length) || 0;
     if (suite.length === 1 && (suite.length < previousSuiteLength)) {
@@ -157,13 +145,10 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     }
   };
 
-
   this.getIndentedSpecName = function(suite, testName) {
     previousSuite = suite;
-
     return this.getTabIndents(suite.length) + testName;
   };
-
 
   this.getTabIndents = function(specLength) {
     var tabIndents = '';
@@ -173,22 +158,16 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     return tabIndents;
   };
 
-
   this.writeToCache = function(message) {
     suiteOutputCache.content.push(message);
   };
 
-
   this.writeToErrorCache = function(message, suite) {
     suiteErrorOutput.content.push(message);
-    if (suite) {
-      suiteOutputCache.failedSuites = suiteOutputCache.failedSuites.concat(suite);
-    }
+    suite && (suiteOutputCache.failedSuites = suiteOutputCache.failedSuites.concat(suite));
   };
 
-
   this.flushCache = function() {
-
     var self = this;
     suiteOutputCache.content.forEach(function(spec) {
       if (Array.isArray(spec)) {
@@ -197,10 +176,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
           // TODO: suites should be identified by a unique ID from Jasmine - is it possible?
           return failedSuite === trimmedSuiteName;
         });
-
-        if (hasFailingSpec) {
-          spec[0] = self.HEADER_FAILURE;
-        }
+        hasFailingSpec && (spec[0] = self.HEADER_FAILURE);
         self.write(util.format(spec[0], spec[1], spec[2]));
       } else {
         self.write(spec);
@@ -210,10 +186,8 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     this.resetSuiteOutput();
   };
 
-
   this.onBrowserComplete = function(browser) {
     this.flushCache();
-
     this.write(this._refresh());
 
     if (suiteErrorOutput.content.length > 0) {
@@ -229,30 +203,21 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     previousSuite = null;
   };
 
-
-  this.onRunStart = function(browsers) {
-    this._browsers = browsers;
-  };
-
-
   this._refresh = function() {
     return this._renderSummary();
   };
-
 
   this._renderSummary = function() {
     return this._browsers.map(this.renderBrowser).join('\n') + '\n';
   };
 
-
   this.resetSuiteOutput = function() {
     suiteOutputCache = {
       prefixNewline: true,
-      content: [],
-      failedSuites: []
+      content:       [],
+      failedSuites:  []
     };
   };
-
 
   this._dumpDebug = function() {
     var formattedSpecs = [];
@@ -264,10 +229,9 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     console.log('[', JSON.stringify(totalResult), ',', formattedSpecs, "]\n\n");
   };
 
-
   this._testInterface = {
-    previousSuite: previousSuite,
-    isFirstSpec: isFirstSpec,
+    previousSuite:    previousSuite,
+    isFirstSpec:      isFirstSpec,
     suiteOutputCache: suiteOutputCache,
     suiteErrorOutput: suiteErrorOutput
   };
