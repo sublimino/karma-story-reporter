@@ -6,12 +6,10 @@ describe("Karma story reporter mock formatter", function() {
     expect(mockFormatter('a', 'b', 'c')).toBe('abc');
   });
 
-
   it("concatenates arguments into a string", function() {
     expect(mockFormatter('0', '1', '2')).toBe('012');
   });
 });
-
 
 describe("Karma story reporter", function() {
 
@@ -41,7 +39,6 @@ describe("Karma story reporter", function() {
         });
       });
   });
-
 
   using("spec sets",
     [
@@ -196,8 +193,15 @@ describe("Karma story reporter", function() {
           '\t- Suite B:',
           '\t\tTest B'
         ]
+      ],
+      [
+        [
+          {"id": 0, "description": "has a passing child test", "suite": ["Initial spec", "Initial spec 2"], "success": true, "skipped": false, "time": 3, "log": []}
+        ] ,
+        [ '- Initial spec:',
+          '\t- Initial spec 2:',
+          '\t\thas a passing child test' ]
       ]
-
 
     ],
     function(testResults, expectedFormatting) {
