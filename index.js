@@ -6,7 +6,7 @@
 var util = require('util');
 require('colors');
 
-var StoryReporter = function(baseReporterDecorator, formatError, helper, reportSlow, colors) {
+var StoryReporter = function(baseReporterDecorator, config, formatError, helper, reportSlow, colors) {
 
   'use strict';
 
@@ -20,6 +20,11 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
   baseReporterDecorator(this, formatError, reportSlow);
 
+  var reporterConfig = config.storyReporter || {};
+
+  this.showSkipped = reporterConfig.showSkipped || false;
+  this.showSkippedSummary = reporterConfig.showSkippedSummary || false;
+
   this.USE_COLORS = colors;
 
   this.HEADER_PASSED = '%s %s' + '\n';
@@ -27,6 +32,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
   this.SPEC_PASSED = '%s %s PASSED' + '\n';
   this.SPEC_FAILURE = '%s %s FAILED' + '\n';
+  this.SPEC_SKIPPED = '%s %s SKIPPED' + '\n';
   this.SPEC_SLOW_PASSED = '%s %s PASSED (SLOW: %s)' + '\n';
   this.SPEC_SLOW_FAILED = '%s %s FAILED (SLOW: %s)' + '\n';
   this.ERROR = '%s ERROR\n';
@@ -40,6 +46,8 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   this.TOTAL_SUCCESS = 'TOTAL: %d SUCCESS\n';
   this.TOTAL_FAILED = 'TOTAL: %d FAILED, %d SUCCESS\n';
 
+  this.BROWSER_LOG = '%s %s\n';
+
   if (this.USE_COLORS) {
 
     this.HEADER_PASSED = this.HEADER_PASSED.green;
@@ -47,6 +55,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
     this.SPEC_PASSED = this.SPEC_PASSED.green;
     this.SPEC_FAILURE = this.SPEC_FAILURE.red;
+    this.SPEC_SKIPPED = this.SPEC_SKIPPED.white;
     this.SPEC_SLOW_PASSED = this.SPEC_SLOW_PASSED.yellow;
     this.SPEC_SLOW_FAILED = this.SPEC_SLOW_FAILED.red;
     this.ERROR = this.ERROR.red;
@@ -61,18 +70,30 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     this.TOTAL_FAILED = this.TOTAL_FAILED.red;
   }
 
-  this.specSuccess = function(browser, result) {
+  this.specSuccess = this.specSkipped = function(browser, result) {
     debug && totalResult.push(result);
-
     var specName = this.getSpecName(result, browser);
-    if (reportSlow && result.time > reportSlow) {
-      var time = helper.formatTimeInterval(result.time);
-      var fullSpecName = result.suite.join(' ') + ' ' + result.description;
 
-      this.writeToCache([this.SPEC_SLOW_PASSED, browser.name, specName, time]);
-      this.writeToErrorCache(util.format(this.SPEC_SLOW_PASSED, browser.name, fullSpecName, time));
+    if (result.skipped) {
+      var specName = this.getSpecName(result, browser);
+      if (this.showSkipped) {
+        this.writeToCache([this.SPEC_SKIPPED, browser.name, specName]);
+      }
+      if (this.showSkippedSummary) {
+        var fullSpecName = result.suite.join(' ') + ' ' + result.description;
+        this.writeToErrorCache(util.format(this.SPEC_SKIPPED, browser.name, fullSpecName));
+      }
     } else {
-      this.writeToCache([this.SPEC_PASSED, browser.name, specName]);
+      if (reportSlow && result.time > reportSlow) {
+        var time = helper.formatTimeInterval(result.time);
+        var fullSpecName = result.suite.join(' ') + ' ' + result.description;
+
+        this.writeToCache([this.SPEC_SLOW_PASSED, browser.name, specName, time]);
+        this.writeToErrorCache(util.format(this.SPEC_SLOW_PASSED, browser.name, fullSpecName, time));
+      } else {
+        this.writeToCache([this.SPEC_PASSED, browser.name, specName]);
+      }
+
     }
 
     debug && this._dumpDebug();
@@ -182,9 +203,18 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
     this.resetSuiteOutput();
   };
 
+  this.onBrowserLog = function(browser, log, type) {
+    this.writeToCache([this.BROWSER_LOG, browser.name, type.toUpperCase() + " " + log]);
+  };
+
   this.onBrowserComplete = function(browser) {
     this.flushCache();
     this.write(this._refresh());
+
+    var results = browser.lastResult;
+    if (results.disconnected || results.error) {
+      this.writeToErrorCache(util.format(this.ERROR, browser.name));
+    }
 
     if (suiteErrorOutput.content.length > 0) {
       var self = this;
@@ -235,7 +265,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   this.resetSuiteOutput();
 };
 
-StoryReporter.$inject = ['baseReporterDecorator', 'formatError', 'helper', 'config.reportSlowerThan', 'config.colors'];
+StoryReporter.$inject = ['baseReporterDecorator', 'config', 'formatError', 'helper', 'config.reportSlowerThan', 'config.colors'];
 
 // PUBLISH DI MODULE
 module.exports = {
