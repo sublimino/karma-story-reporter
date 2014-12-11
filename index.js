@@ -43,9 +43,9 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
   if (this.USE_COLORS) {
 
     this.HEADER_PASSED = this.HEADER_PASSED.green;
-    this.HEADER_FAILURE = this.HEADER_FAILURE.red;
+    this.HEADER_FAILURE = this.HEADER_FAILURE.grey;
 
-    this.SPEC_PASSED = this.SPEC_PASSED.green;
+    this.SPEC_PASSED = this.SPEC_PASSED.cyan;
     this.SPEC_FAILURE = this.SPEC_FAILURE.red;
     this.SPEC_SLOW_PASSED = this.SPEC_SLOW_PASSED.yellow;
     this.SPEC_SLOW_FAILED = this.SPEC_SLOW_FAILED.red;
@@ -143,7 +143,7 @@ var StoryReporter = function(baseReporterDecorator, formatError, helper, reportS
 
   this.getIndentedSpecName = function(suite, testName) {
     previousSuite = suite;
-    return this.getTabIndents(suite.length) + testName;
+    return '\u2022' + this.getTabIndents(suite.length) + testName;
   };
 
   this.getTabIndents = function(specLength) {
