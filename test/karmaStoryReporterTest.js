@@ -19,7 +19,23 @@ describe("Karma story reporter", function() {
   var browser = {name: 'Test Browser (Test)'};
 
   beforeEach(function() {
-    storyReporter = new StoryReporter(baseReporterDecorator, null, null, null, false);
+    storyReporter = new StoryReporter(baseReporterDecorator, {}, null, null, null, false);
+  });
+
+  describe("configuration options", function() {
+
+    it("defaults to disable skipped tests", function() {
+      var thisStoryReporter = new StoryReporter(baseReporterDecorator, {}, null, null, null, false);
+
+      expect(thisStoryReporter.showSkipped).toBeFalsy();
+    });
+
+    it("can enable skipped tests", function() {
+      var thisStoryReporter = new StoryReporter(baseReporterDecorator, {storyReporter: {showSkipped: true}}, null, null, null, false);
+
+      expect(thisStoryReporter.showSkipped).toBeTruthy();
+    });
+
   });
 
   describe("tabs", function() {
@@ -201,12 +217,40 @@ describe("Karma story reporter", function() {
         [ '- Initial spec:',
           '\t- Initial spec 2:',
           '\t\thas a passing child test' ]
+      ],
+      [
+        [
+          {"id": 0, "description": "runs a test", "suite": ["Initial spec"], "success": true, "skipped": false, "time": 2, "log": []}
+        ] ,
+        [ '- Initial spec:', '\truns a test' ]
+      ],
+      // Jasmine 2 lacks "id"
+      [
+        [
+          {"description": "runs a test", "id": "spec0", "log": [], "skipped": false, "success": true, "suite": ["Initial spec"], "time": 1},
+          {"description": "skips a test", "id": "spec1", "log": [], "skipped": true, "success": true, "suite": ["Initial spec"], "time": 0}
+        ] ,
+        [ '- Initial spec:', '\truns a test'],
+        {storyReporter: {showSkipped: false}}
+      ],
+      [
+        [
+          {"description": "runs a test", "id": "spec0", "log": [], "skipped": false, "success": true, "suite": ["Initial spec"], "time": 1},
+          {"description": "skips a test", "id": "spec1", "log": [], "skipped": true, "success": true, "suite": ["Initial spec"], "time": 0}
+        ] ,
+        [ '- Initial spec:', '\truns a test', '\tskips a test' ],
+        {storyReporter: {showSkipped: true}}
       ]
 
     ],
-    function(testResults, expectedFormatting) {
+    function(testResults, expectedFormatting, config) {
 
       it("detects spec success", function() {
+
+        if (config) {
+          storyReporter = new StoryReporter(baseReporterDecorator, config, null, null, null, false);
+        }
+
         var suiteOutputCache = {content: []};
         storyReporter.writeToCache = function(output) {
           suiteOutputCache.content.push(output);

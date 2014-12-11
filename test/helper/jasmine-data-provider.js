@@ -16,6 +16,10 @@ function using(name, values, func) {
         valuesDescription = valuesDescription.substr(0, maxDescriptionLength) + '...';
       }
     }
-    jasmine.currentEnv_.currentSpec.description += ' ("' + name + '": ' + valuesDescription + ')';
+
+    var currentSpec;
+    if (currentSpec = jasmine.getEnv().currentSpec) {
+      currentSpec.description += ' ("' + name + '": ' + valuesDescription + ')';
+    }
   }
 }

@@ -1,11 +1,11 @@
 {
   "name": "karma-story-reporter",
-  "version": "0.2.2",
+  "version": "0.2.3-dev",
   "description": "A Karma plugin. Report results in BDD-style story format.",
   "main": "index.js",
   "scripts": {
-    "test": "karma start karma.conf.js --single-run",
-    "demo": "karma start karma-story-reporter-demo.conf.js --single-run && false || true"
+    "test": "./node_modules/karma/bin/karma start karma.conf.js --single-run",
+    "demo": "./node_modules/karma/bin/karma start karma-story-reporter-demo.conf.js --single-run && false || true"
   },
   "repository": {
     "type": "git",
@@ -32,7 +32,10 @@
     "grunt": "~0.4.1",
     "grunt-npm": "~0.0.2",
     "grunt-bump": "~0.0.7",
-    "grunt-auto-release": "~0.0.2"
+    "grunt-auto-release": "~0.0.2",
+    "karma-phantomjs-launcher": "~0.1.x",
+    "karma-jasmine": "~0.1.x",
+    "karma-story-reporter": "~0.2.x"
   },
   "contributors": [
     "Vojta Jina <vojta.jina@gmail.com>"
