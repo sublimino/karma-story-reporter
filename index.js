@@ -20,10 +20,12 @@ var StoryReporter = function(baseReporterDecorator, config, formatError, helper,
 
   baseReporterDecorator(this, formatError, reportSlow);
 
-  var reporterConfig = config.storyReporter || {};
+  var reporterConfig = config.storyConfigReporter || {};
 
   this.showSkipped = reporterConfig.showSkipped || false;
   this.showSkippedSummary = reporterConfig.showSkippedSummary || false;
+  this.showBullets = reporterConfig.showBullets || false;
+  this.colorsConfig = reporterConfig.colors || false;
 
   this.USE_COLORS = colors;
 
@@ -50,16 +52,33 @@ var StoryReporter = function(baseReporterDecorator, config, formatError, helper,
 
   if (this.USE_COLORS) {
 
-    this.HEADER_PASSED = this.HEADER_PASSED.green;
-    this.HEADER_FAILURE = this.HEADER_FAILURE.red;
+    var 
+    //Colors for passed tests
+    passedHeaderColor = this.colorsConfig.passedHeader || 'green',
+    passedSpecsColor  = this.colorsConfig.passedSpecs || 'green',
 
-    this.SPEC_PASSED = this.SPEC_PASSED.green;
-    this.SPEC_FAILURE = this.SPEC_FAILURE.red;
+    //Colors for failure tests
+    failureHeaderColor = this.colorsConfig.failureHeader || 'red',
+    failureSpecsColor  = this.colorsConfig.failureSpecs || 'red';
+
+
+    //Settings for passed tests
+    this.HEADER_PASSED = this.HEADER_PASSED[passedHeaderColor];
+    this.SPEC_PASSED = this.SPEC_PASSED[passedSpecsColor];
+
+    //Settings for failure tests
+    this.HEADER_FAILURE = this.HEADER_FAILURE[failureHeaderColor];
+    this.SPEC_FAILURE = this.SPEC_FAILURE[failureSpecsColor];
+    
+    //Settings skipped
     this.SPEC_SKIPPED = this.SPEC_SKIPPED.white;
+
+    //Settings for slow tests
     this.SPEC_SLOW_PASSED = this.SPEC_SLOW_PASSED.yellow;
     this.SPEC_SLOW_FAILED = this.SPEC_SLOW_FAILED.red;
     this.ERROR = this.ERROR.red;
 
+    //Settings for the end of the test
     this.FINISHED_ERROR = this.FINISHED_ERROR.red;
     this.FINISHED_SUCCESS = this.FINISHED_SUCCESS.green;
     this.FINISHED_DISCONNECTED = this.FINISHED_DISCONNECTED.red;
@@ -84,6 +103,7 @@ var StoryReporter = function(baseReporterDecorator, config, formatError, helper,
         this.writeToErrorCache(util.format(this.SPEC_SKIPPED, browser.name, fullSpecName));
       }
     } else {
+
       if (reportSlow && result.time > reportSlow) {
         var time = helper.formatTimeInterval(result.time);
         var fullSpecName = result.suite.join(' ') + ' ' + result.description;
@@ -164,6 +184,10 @@ var StoryReporter = function(baseReporterDecorator, config, formatError, helper,
 
   this.getIndentedSpecName = function(suite, testName) {
     previousSuite = suite;
+
+    if (this.showBullets)
+      return '\u2022' + this.getTabIndents(suite.length) + testName;
+
     return this.getTabIndents(suite.length) + testName;
   };
 
