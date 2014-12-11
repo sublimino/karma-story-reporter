@@ -1,6 +1,6 @@
 {
   "name": "karma-story-reporter",
-  "version": "0.2.3-dev",
+  "version": "0.3.0",
   "description": "A Karma plugin. Report results in BDD-style story format.",
   "main": "index.js",
   "scripts": {
@@ -29,10 +29,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-npm": "~0.0.2",
-    "grunt-bump": "~0.0.7",
-    "grunt-auto-release": "~0.0.2",
     "karma-phantomjs-launcher": "~0.1.x",
     "karma-jasmine": "~0.1.x",
     "karma-story-reporter": "~0.2.x"
