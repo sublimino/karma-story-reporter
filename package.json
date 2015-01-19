@@ -31,7 +31,7 @@
   "devDependencies": {
     "karma-phantomjs-launcher": "~0.1.x",
     "karma-jasmine": "~0.1.x",
-    "karma-story-reporter": "~0.2.x"
+    "karma-story-reporter": "~0.3.x"
   },
   "contributors": [
     "Vojta Jina <vojta.jina@gmail.com>"
