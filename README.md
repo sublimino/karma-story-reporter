@@ -20,11 +20,29 @@ npm install karma-story-reporter --save-dev
 ```
 
 ## Configuration
+Minimum configuration:
 ```js
 // karma.conf.js
 module.exports = function(config) {
   config.set({
     reporters: ['story'],
+  });
+};
+```
+
+
+Only setting `reporters` to `'story'` is required - `storyReporter` keys are optional.
+
+```js
+// karma.conf.js
+module.exports = function(config) {
+  config.set({
+    reporters: ['story'],
+    // these are optional
+    storyReporter: {
+      showSkipped:        true, // default: false
+      showSkippedSummary: true  // default: false
+    }
   });
 };
 ```
